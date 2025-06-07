@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 import axios from "axios";
 import { BASE_URL } from "./apiPath"; 
@@ -8,7 +9,7 @@ import axiosInstance from "./axiosInstance";
 // const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 // const cloudFolderName = process.env.REACT_APP_CLOUDINARY_CLOUD_FOLDER_NAME;
 const handleApiError = (error) => {
-  console.error("API Error:", error);
+  // console.error("API Error:", error);
   const message =
     error?.response?.data?.message ||
     error?.response?.data ||
@@ -26,10 +27,10 @@ export const registerUser = async (userData) => {
     });
     return response.data;
   } catch (error) {
-    console.error(
-      "Registration error:",
-      error?.response?.data || error.message
-    );
+    // console.error(
+    //   "Registration error:",
+    //   error?.response?.data || error.message
+    // );
     throw error.response?.data || { message: "Registration failed" };
   }
 };
@@ -39,7 +40,7 @@ export const loginUser = async (credentials) => {
     const response = await axios.post(`${BASE_URL}/auth/signin`, credentials);
     return response.data;
   } catch (error) {
-    console.error("Login error:", error?.response?.data || error.message);
+    // console.error("Login error:", error?.response?.data || error.message);
     throw error.response?.data || { message: "Login failed" };
   }
 };
@@ -53,6 +54,17 @@ export const getUserById = async (id) => {
     throw error;
   }
 };
+export const getConnectedSearchedUserById = async (currentUserId, targetUserId) => {
+  // eslint-disable-next-line no-useless-catch
+  try {
+    const response = await axiosInstance.get(
+      `/users/get/search/${currentUserId}/${targetUserId}`
+    );
+    return response.data;
+  } catch (error) {
+    handleApiError(error);
+  }
+};
 
 export const getConnections = async (userId) => {
   // eslint-disable-next-line no-useless-catch
@@ -62,13 +74,13 @@ export const getConnections = async (userId) => {
     );
     return response.data;
   } catch (error) {
-    throw error;
+    handleApiError(error);
   }
 };
 
 export const searchUsers = async (searchTerm, excludeIds = []) => {
   try {
-    const response = await axios.get(`${BASE_URL}/users/searchByName`, {
+    const response = await axiosInstance.get(`${BASE_URL}/users/searchByName`, {
       params: {
         name: searchTerm,
         excludeIds: excludeIds.join(","),
@@ -76,7 +88,7 @@ export const searchUsers = async (searchTerm, excludeIds = []) => {
     });
     return response.data;
   } catch (error) {
-    console.error("Error searching users:", error);
+    // console.error("Error searching users:", error);
     return [];
   }
 };
@@ -211,5 +223,18 @@ export const uploadImageToCloudinary = async (file) => {
     return res.data.secure_url;
   } catch (error) {
     handleApiError(error);
+  }
+};
+
+
+export const checkUsernameAPI = async (username) => {
+  try {
+    const res = await axiosInstance.get(`${BASE_URL}/users/check-username`, {
+      params: { username },
+    });
+    return res.data;
+  } catch (err) {
+    // console.error("Username check failed", err);
+    return false;
   }
 };

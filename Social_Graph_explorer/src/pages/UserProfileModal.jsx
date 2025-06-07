@@ -42,6 +42,7 @@ const UserProfileModal = ({
   const fetchStatus = async () => {
 
     // if (!currentUser?.id || (!userData?.userId || !userData?.requesterId)) return;
+    console.log("Fetching connection status for user:", userData);
     try {
       setLoadingStatus(true);
       if(currentUser?.id === userData?.requesterId){
@@ -66,6 +67,10 @@ const UserProfileModal = ({
   };
 
   useEffect(() => {
+    console.log("visible", visible);
+    console.log("userData", userData);
+    // console.log("userData?.userId", userData?.userId);
+    // console.log("userData?.requesterId", userData?.requesterId);
     if (visible && (userData?.userId || userData?.requesterId)) {
       fetchStatus();
     }
@@ -93,7 +98,9 @@ const UserProfileModal = ({
       requesterId: currentUser?.id,
       receiverId: userData.userId,
     };
-
+    // console.log("userData?.connectionId", userData?.connectionId);
+    // console.log("currentUser?.id", currentUser?.id);
+    // console.log("userData?.requesterId", userData?.requesterId);
     switch (status) {
       case "PENDING":
         if (
@@ -356,7 +363,7 @@ const UserProfileModal = ({
               <Title level={4}>
                 {userData.fname} {userData.lname}
               </Title>
-              <Paragraph type="secondary">@{userData.username}</Paragraph>
+              <Paragraph type="secondary">{userData.username}</Paragraph>
             </div>
           </div>
 

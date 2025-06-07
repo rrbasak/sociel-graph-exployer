@@ -13,12 +13,18 @@ import {
   Row,
   Col,
   Spin,
-  Space
+  Space,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
-import { registerUser, uploadImageToCloudinary } from "../../api/auth";
+import {
+  registerUser,
+  uploadImageToCloudinary,
+  checkUsernameAPI,
+} from "../../api/auth";
+import { toast } from "react-toastify";
+import { debounce } from "lodash";
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -89,10 +95,25 @@ const Register = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState(null);
+  const [username, setUsername] = useState("");
 
   const handleFinish = async (values) => {
     setLoading(true);
+    const usernameRegex = /^[a-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]{4,8}$/;
+
+    if (!username || !usernameRegex.test(username) || usernameError) {
+      if (!username) {
+        setUsernameError("Username is required");
+      } else if (!usernameRegex.test(username)) {
+        setUsernameError(
+          "4–8 chars, lowercase, alphanumeric or special chars only"
+        );
+      }
+      setLoading(false);
+      return;
+    }
     try {
       let profileUrl = null;
       let coverUrl = null;
@@ -112,8 +133,6 @@ const Register = () => {
         ? values.dateOfBirth.format("YYYY-MM-DD")
         : null;
 
-
-
       const payload = {
         fname: values.fname,
         lname: values.lname,
@@ -129,15 +148,71 @@ const Register = () => {
         coverPhoto: coverUrl,
       };
 
-      await registerUser(payload);
-      message.success("Registered successfully!");
+      const res = await registerUser(payload);
+      console.log("Registration successful", res);
+      toast.success(`Account created! Welcome, ${res?.fname}.`);
       navigate("/login");
     } catch (err) {
-      message.error(err?.response?.data?.message || "Registration failed");
-    }
-    finally{
+      // console.log("err", err);
+      const errorMsg = err?.error || "Registration failed. Please try again.";
+
+      toast.error(errorMsg);
+    } finally {
       setLoading(false);
     }
+  };
+
+  const checkUsernameAvailability = async (username) => {
+    try {
+      setUsernameError(null);
+      const res = await checkUsernameAPI(username);
+      // console.log("Username is already taken", res);
+      if (res) {
+        // console.log("Username is already taken", res.data);
+        setUsernameError("Username is already taken");
+      }
+    } catch (err) {
+      // console.error("Error checking username availability", err);
+      setUsernameError("Error checking username");
+    }
+  };
+
+  const debouncedCheck = debounce((username) => {
+    checkUsernameAvailability(username);
+  }, 300);
+
+  // const handleUsernameChange = (e) => {
+  //   const value = e.target.value;
+  //   setUsername(value);
+  //   form.setFieldsValue({ username: value });
+  //   if (value) {
+  //     debouncedCheck(value);
+  //   } else {
+  //     setUsernameError(null);
+  //   }
+  // };
+
+  const handleUsernameChange = (e) => {
+    const value = e.target.value;
+    setUsername(value);
+    form.setFieldsValue({ username: value });
+
+    const usernameRegex = /^[a-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]{4,8}$/;
+
+    if (!value) {
+      setUsernameError("Username is required");
+      return;
+    }
+
+    if (!usernameRegex.test(value)) {
+      setUsernameError(
+        "4–8 chars, lowercase, alphanumeric or special chars only"
+      );
+      return;
+    }
+
+    setUsernameError(null);
+    debouncedCheck(value);
   };
 
   return (
@@ -189,12 +264,41 @@ const Register = () => {
                 </Col>
               </Row>
 
-              <Form.Item
+              {/* <Form.Item
                 label="Username"
                 name="username"
                 rules={[{ required: true, message: "Username is required" }]}
               >
                 <Input placeholder="Username" autoComplete="new-username" />
+              </Form.Item> */}
+
+              <Form.Item
+                required
+                label="Username"
+                name="username"
+                validateStatus={usernameError ? "error" : ""}
+                help={usernameError || ""}
+                // rules={[{ required: true, message: "Username is required" }]}
+              >
+                <Input
+                  name="username"
+                  value={username}
+                  placeholder="Username"
+                  autoComplete="new-username"
+                  onChange={handleUsernameChange}
+                  onBlur={() => {
+                    const usernameRegex =
+                      /^[a-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]{4,8}$/;
+
+                    if (!username) {
+                      setUsernameError("Username is required");
+                    } else if (!usernameRegex.test(username)) {
+                      setUsernameError(
+                        "4–8 chars, lowercase, alphanumeric or special chars only"
+                      );
+                    }
+                  }}
+                />
               </Form.Item>
 
               <Form.Item
@@ -211,7 +315,10 @@ const Register = () => {
               <Form.Item
                 label="Password"
                 name="password"
-                rules={[{ required: true, message: "Password is required" }]}
+                rules={[
+                  { required: true, message: "Password is required" },
+                  { min: 6, message: "Password must be at least 6 characters" },
+                ]}
               >
                 <Input.Password
                   placeholder="Password"
@@ -263,7 +370,7 @@ const Register = () => {
                   name="profilePicture"
                   listType="picture"
                   maxCount={1}
-                  beforeUpload={() => false} 
+                  beforeUpload={() => false}
                   accept="image/*"
                 >
                   <Button icon={<UploadOutlined />}>
@@ -284,7 +391,7 @@ const Register = () => {
                   name="coverPhoto"
                   listType="picture"
                   maxCount={1}
-                  beforeUpload={() => false} 
+                  beforeUpload={() => false}
                   accept="image/*"
                 >
                   <Button icon={<UploadOutlined />}>Select Cover Photo</Button>

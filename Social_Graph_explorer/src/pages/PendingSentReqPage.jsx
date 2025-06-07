@@ -1,11 +1,12 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
-import { Card, Button, Modal } from "antd";
-import { getPendingRequest,  sendConnectionRequest } from "../api/auth"; 
+import { Card, Button, Modal, Spin } from "antd";
+import { getPendingRequest, sendConnectionRequest } from "../api/auth";
 import UserProfileModal from "./UserProfileModal";
 import { toast } from "react-toastify";
 
 const PendingSentReqPage = () => {
+  const [loading, setLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.id;
   const [suggestions, setSuggestions] = useState([]);
@@ -15,11 +16,14 @@ const PendingSentReqPage = () => {
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
   const fetchSuggestions = async () => {
+    setLoading(true);
     try {
       const data = await getPendingRequest(currentUser?.id);
       setSuggestions(data || []);
     } catch (err) {
       console.error("Error fetching suggestions:", err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,11 +31,8 @@ const PendingSentReqPage = () => {
     fetchSuggestions();
   }, []);
 
-  
   const handleAddConnection = async (selectedUser) => {
     try {
-
-
       const res = await sendConnectionRequest(userId, selectedUser?.userId);
 
       if (res?.success) {
@@ -47,69 +48,71 @@ const PendingSentReqPage = () => {
   return (
     <div style={{ padding: 24 }}>
       <h2>Pending Friend Request(s)</h2>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 16,
-          marginTop: 24,
-        }}
-      >
-        {suggestions.map((user) => (
-          <Card
-            key={user.username}
-            hoverable
-            style={{ width: 250 }}
-            cover={
-              <img
-                alt="cover"
-                src={user.coverPhoto}
-                style={{ height: 120, objectFit: "cover" }}
-              />
-            }
-          >
-            <div style={{ textAlign: "center" }}>
-              <img
-                src={user.profilePicture}
-                alt="profile"
-                style={{
-                  width: 70,
-                  height: 70,
-                  borderRadius: "50%",
-                  marginTop: -35,
-                  border: "3px solid white",
-                }}
-              />
-              <h3 style={{ margin: "10px 0 0 0" }}>
-                {user.fname} {user.lname}
-              </h3>
-              <p style={{ color: "#999" }}>@{user.username}</p>
-              <p style={{ fontSize: 12 }}>{user.bio}</p>
-              <Button
-                type="link"
-                onClick={() => {
-                  setSelectedUser(user);
-                  setIsModalVisible(true);
-                }}
-              >
-                View Profile
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+      <Spin spinning={loading}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 16,
+            marginTop: 24,
+          }}
+        >
+          {suggestions.map((user) => (
+            <Card
+              key={user.username}
+              hoverable
+              style={{ width: 250 }}
+              cover={
+                <img
+                  alt="cover"
+                  src={user.coverPhoto}
+                  style={{ height: 120, objectFit: "cover" }}
+                />
+              }
+            >
+              <div style={{ textAlign: "center" }}>
+                <img
+                  src={user.profilePicture}
+                  alt="profile"
+                  style={{
+                    width: 70,
+                    height: 70,
+                    borderRadius: "50%",
+                    marginTop: -35,
+                    border: "3px solid white",
+                  }}
+                />
+                <h3 style={{ margin: "10px 0 0 0" }}>
+                  {user.fname} {user.lname}
+                </h3>
+                <p style={{ color: "#999" }}>@{user.username}</p>
+                <p style={{ fontSize: 12 }}>{user.bio}</p>
+                <Button
+                  type="link"
+                  onClick={() => {
+                    setSelectedUser(user);
+                    setIsModalVisible(true);
+                  }}
+                >
+                  View Profile
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
 
-      <UserProfileModal
-        visible={isModalVisible}
-        onClose={() => {
-          setIsModalVisible(false);
-          setSelectedUser(null);
-        }}
-        userData={selectedUser}
-        currentUserInterests={currentUser?.interests || []}
-        onAddConnection={() => handleAddConnection(selectedUser)}
-        refreshConnections={() => {}}
-      />
+        <UserProfileModal
+          visible={isModalVisible}
+          onClose={() => {
+            setIsModalVisible(false);
+            setSelectedUser(null);
+          }}
+          userData={selectedUser}
+          currentUserInterests={currentUser?.interests || []}
+          onAddConnection={() => handleAddConnection(selectedUser)}
+          refreshConnections={() => {}}
+        />
+      </Spin>
     </div>
   );
 };

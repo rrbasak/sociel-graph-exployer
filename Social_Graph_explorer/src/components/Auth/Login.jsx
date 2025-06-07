@@ -24,7 +24,10 @@ const Login = () => {
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
       localStorage.setItem("user", JSON.stringify(data));
-      toast.success("Login successful");
+      // toast.success("Login successful");
+      toast.success(
+        `Welcome ${data?.fname}! You have successfully logged in.`
+      );
       navigate("/");
     } catch (err) {
       toast.error(err.message || "Login failed");

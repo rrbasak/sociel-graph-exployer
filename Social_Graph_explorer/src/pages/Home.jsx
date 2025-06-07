@@ -6,6 +6,7 @@ import {
   getConnections,
   searchUsers,
   sendConnectionRequest,
+  getConnectedSearchedUserById,
 } from "../api/auth";
 import {
   List,
@@ -115,7 +116,7 @@ const Home = () => {
   }, [connections]);
   const handleSearchUserClick = async (user) => {
     try {
-      const fullData = await getUserById(user.userId);
+      const fullData = await getConnectedSearchedUserById(userId,user.userId);
       setSearchModalUser(fullData);
       setSearchModalVisible(true);
     } catch (err) {
@@ -281,7 +282,7 @@ const Home = () => {
 
                 <Col xs={24} lg={isFirstTimeUser ? 24 : 8}>
                   <Search
-                    placeholder="Search for people..."
+                    placeholder="Search people by name or username"
                     enterButton={
                       <Button icon={<SearchOutlined />}>Search</Button>
                     }
@@ -305,7 +306,7 @@ const Home = () => {
                             <strong>
                               {item.fname} {item.lname}
                             </strong>{" "}
-                            (@{item.username})
+                            ({item.username})
                           </div>
                         </List.Item>
                       )}

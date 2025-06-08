@@ -6,8 +6,8 @@ import axiosInstance from "./axiosInstance";
 
 
 
-// const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
-// const cloudFolderName = process.env.REACT_APP_CLOUDINARY_CLOUD_FOLDER_NAME;
+// const cloudName = process.env.VITE_CLOUDINARY_CLOUD_NAME;
+// const cloudFolderName = process.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 const handleApiError = (error) => {
   // console.error("API Error:", error);
   const message =
@@ -211,12 +211,12 @@ export const getPendingRequest = async (userId) => {
 export const uploadImageToCloudinary = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_CLOUD_FOLDER_NAME);
-  formData.append("cloud_name", process.env.REACT_APP_CLOUDINARY_CLOUD_NAME);
+  formData.append("upload_preset", process.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+  formData.append("cloud_name", process.env.VITE_CLOUDINARY_CLOUD_NAME);
 
   try {
     const res = await axiosInstance.post(
-      `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${process.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData
     );
 

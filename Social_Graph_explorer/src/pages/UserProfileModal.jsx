@@ -332,7 +332,7 @@ const UserProfileModal = ({
                 width: "100%",
                 height: 180,
                 backgroundImage: `url(${
-                  userData.coverPhoto || "https://via.placeholder.com/600x200"
+                  userData.coverPhoto || "https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1200&q=80"
                 })`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
@@ -343,7 +343,7 @@ const UserProfileModal = ({
             >
               {/* Profile Picture - overlapping */}
               <img
-                src={userData.profilePicture}
+                src={userData.profilePicture || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
                 alt="Profile"
                 style={{
                   width: 100,

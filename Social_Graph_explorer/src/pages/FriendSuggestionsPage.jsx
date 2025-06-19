@@ -73,14 +73,14 @@ const FriendSuggestionsPage = () => {
               cover={
                 <img
                   alt="cover"
-                  src={user.coverPhoto}
+                  src={user.coverPhoto || "https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1200&q=80"}
                   style={{ height: 120, objectFit: "cover" }}
                 />
               }
             >
               <div style={{ textAlign: "center" }}>
                 <img
-                  src={user.profilePicture}
+                  src={user.profilePicture || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
                   alt="profile"
                   style={{
                     width: 70,
